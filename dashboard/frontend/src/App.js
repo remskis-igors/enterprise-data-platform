@@ -6,7 +6,12 @@ function App() {
 
   useEffect(() => {
     fetch('/api/status')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then(data => setStatus(data))
       .catch(err => console.error("Error fetching status:", err));
   }, []);
@@ -14,7 +19,7 @@ function App() {
   return (
     <div>
       <h1>Dashboard</h1>
-      {status ? <StatusWidget status={status} /> : <p>Loading...</p>}
+      <StatusWidget status={status} />
     </div>
   );
 }

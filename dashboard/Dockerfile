@@ -12,6 +12,9 @@ WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN npm install
 COPY backend/ ./
+
+# Copying build React-app from  Stage 1 to folder  public
 COPY --from=build /app/build ./public
+
 EXPOSE 3001
 CMD ["node", "server.js"]
