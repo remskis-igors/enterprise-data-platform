@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import StatusWidget from './components/StatusWidget';
+import AggregatedStatus from './components/AggregatedStatus';
 
 function App() {
   const [status, setStatus] = useState(null);
@@ -20,6 +21,7 @@ function App() {
     <div>
       <h1>Dashboard</h1>
       <StatusWidget status={status} />
+      <AggregatedStatus />
     </div>
   );
 }

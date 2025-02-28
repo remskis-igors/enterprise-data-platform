@@ -16,7 +16,7 @@ schema = StructType([
 ])
 
 # Reading data from Kafka
-df = kafka_utils.create_kafka_df(spark, "localhost:9092", "raw_input")
+df = kafka_utils.create_kafka_df(spark, "kafka:9092", "raw_input")
 
 
 # JSON parsing from Kafka

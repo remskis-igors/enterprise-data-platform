@@ -9,6 +9,11 @@ services:
       - "2181:2181"
     networks:
       - kafka_network
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181 | grep -q imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka:
     image: confluentinc/cp-kafka:6.2.0
@@ -17,25 +22,35 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     ports:
       - "9092:9092"
     networks:
       - kafka_network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9092'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   etl-service:
     build: ./etl-service
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     networks:
       - kafka_network
 
   data-generator:
     build: ./data-generator
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     networks:
       - kafka_network
 
@@ -43,8 +58,31 @@ services:
     build: ./dashboard
     ports:
       - "3001:3001"
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - kafka_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  aggregator:
+    build: ./aggregator
+    ports:
+      - "5000:5000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - kafka_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/aggregated || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   kafka_network:
