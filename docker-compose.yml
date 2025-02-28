@@ -84,6 +84,79 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: your_user
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: your_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kafka_network
+
+  schema-registry:
+      image: confluentinc/cp-schema-registry:6.2.0
+      depends_on:
+        - kafka
+      environment:
+        SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+        SCHEMA_REGISTRY_HOST_NAME: schema-registry
+        SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      ports:
+        - "8081:8081"
+      networks:
+        - kafka_network
+
+  kafka-connect:
+      image: confluentinc/cp-kafka-connect:6.2.0
+      depends_on:
+        - kafka
+        - schema-registry
+      environment:
+        CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+        CONNECT_REST_PORT: 8083
+        CONNECT_GROUP_ID: "kafka-connect-group"
+        CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+        CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+        CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+        CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+        CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+        CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+        CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+        CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+        CONNECT_PLUGIN_PATH: "/usr/share/java"
+      ports:
+        - "8083:8083"
+      networks:
+        - kafka_network
+
+  prometheus:
+      image: prom/prometheus:latest
+      volumes:
+        - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      ports:
+        - "9090:9090"
+      networks:
+        - kafka_network
+
+  grafana:
+      image: grafana/grafana:latest
+      depends_on:
+        - prometheus
+      ports:
+        - "3000:3000"
+      networks:
+        - kafka_network
+      volumes:
+        - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  grafana_data:
+
 networks:
   kafka_network:
     driver: bridge
