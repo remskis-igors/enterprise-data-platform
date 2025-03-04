@@ -85,7 +85,7 @@ Getting Started
 
     Clone the repository:
 
-git clone https://github.com/remski-igors/enterprise-data-platform.git
+git clone https://github.com/remskis-igors/enterprise-data-platform.git
 cd enterprise-data-platform
 
 Build and start all services:
