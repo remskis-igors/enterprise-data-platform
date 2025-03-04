@@ -132,7 +132,33 @@ services:
         - "8083:8083"
       networks:
         - kafka_network
+  scala-service:
+     build: ./scala-service
+     networks:
+       - kafka_network
 
+  go-service:
+      build: ./go-service
+      networks:
+        - kafka_network
+
+  rust-service:
+      build: ./rust-service
+      networks:
+        - kafka_network
+
+  r-shiny-dashboard:
+      build: ./r-shiny-dashboard
+      ports:
+        - "3838:3838"
+      networks:
+        - kafka_network
+  csharp-gateway:
+      build: ./csharp-gateway
+      ports:
+        - "8080:80"
+      networks:
+        - kafka_network
   prometheus:
       image: prom/prometheus:latest
       volumes:
@@ -141,7 +167,6 @@ services:
         - "9090:9090"
       networks:
         - kafka_network
-
   grafana:
       image: grafana/grafana:latest
       depends_on:
@@ -152,7 +177,6 @@ services:
         - kafka_network
       volumes:
         - grafana_data:/var/lib/grafana
-
 volumes:
   postgres_data:
   grafana_data:

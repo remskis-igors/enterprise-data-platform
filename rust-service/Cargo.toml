@@ -1,0 +1,10 @@
+[package]
+name = "rust-service"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+aes = "0.7"
+block-modes = "0.8"
+hex = "0.4"
+hex-literal = "0.3"
