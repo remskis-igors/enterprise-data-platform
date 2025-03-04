@@ -134,6 +134,9 @@ services:
         - kafka_network
   scala-service:
      build: ./scala-service
+     environment:
+       - HADOOP_HOME=/opt/hadoop
+       - hadoop.home.dir=/opt/hadoop
      networks:
        - kafka_network
 

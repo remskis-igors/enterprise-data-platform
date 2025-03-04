@@ -1,5 +1,4 @@
-module github.com/remskis-igors/go-service
-
+module github.com/R1Ga71/enterprise-data-platform/go-service
         go 1.19
 
         require (
