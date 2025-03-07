@@ -1,10 +1,23 @@
 version: '3.8'
 
+x-java-logging: &java-logging
+  volumes:
+    - ./log4j.properties:/app/log4j.properties:ro
+  environment:
+    JAVA_OPTS: "-Dlog4j.configurationFile=/app/log4j.properties"
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_4LW_COMMANDS_WHITELIST: ruok,srvr
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVER_ID: 1
+
+     # ZOOKEEPER_SERVERS: "server.1=zookeeper1:2888:3888;server.2=zookeeper2:2888:3888"
     ports:
       - "2181:2181"
     networks:
@@ -12,13 +25,21 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181 | grep -q imok"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
   kafka:
     image: confluentinc/cp-kafka:6.2.0
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -27,21 +48,24 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
     ports:
       - "9092:9092"
     networks:
       - kafka_network
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9092'"]
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
       interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
   etl-service:
     build: ./etl-service
     depends_on:
       kafka:
+        condition: service_healthy
+      zookeeper:
         condition: service_healthy
     networks:
       - kafka_network
@@ -50,6 +74,8 @@ services:
     build: ./data-generator
     depends_on:
       kafka:
+        condition: service_healthy
+      zookeeper:
         condition: service_healthy
     networks:
       - kafka_network
@@ -61,28 +87,33 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      zookeeper:
+        condition: service_healthy
     networks:
       - kafka_network
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
 
   aggregator:
+    <<: *java-logging
     build: ./aggregator
     ports:
       - "5000:5000"
     depends_on:
       kafka:
         condition: service_healthy
+      zookeeper:
+        condition: service_healthy
     networks:
       - kafka_network
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5000/api/aggregated || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
 
   postgres:
     image: postgres:13
@@ -98,88 +129,106 @@ services:
       - kafka_network
 
   schema-registry:
-      image: confluentinc/cp-schema-registry:6.2.0
-      depends_on:
-        - kafka
-      environment:
-        SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
-        SCHEMA_REGISTRY_HOST_NAME: schema-registry
-        SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      ports:
-        - "8081:8081"
-      networks:
-        - kafka_network
+    image: confluentinc/cp-schema-registry:6.2.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+      zookeeper:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - "8081:8081"
+    networks:
+      - kafka_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   kafka-connect:
-      image: confluentinc/cp-kafka-connect:6.2.0
-      depends_on:
-        - kafka
-        - schema-registry
-      environment:
-        CONNECT_BOOTSTRAP_SERVERS: kafka:9092
-        CONNECT_REST_PORT: 8083
-        CONNECT_GROUP_ID: "kafka-connect-group"
-        CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
-        CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
-        CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
-        CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-        CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-        CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-        CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-        CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
-        CONNECT_PLUGIN_PATH: "/usr/share/java"
-      ports:
-        - "8083:8083"
-      networks:
-        - kafka_network
+    image: confluentinc/cp-kafka-connect:6.2.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+      zookeeper:
+        condition: service_healthy
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: "kafka-connect-group"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_PLUGIN_PATH: "/usr/share/java"
+    ports:
+      - "8083:8083"
+    networks:
+      - kafka_network
+
   scala-service:
-     build: ./scala-service
-     environment:
-       - HADOOP_HOME=/opt/hadoop
-       - hadoop.home.dir=/opt/hadoop
-     networks:
-       - kafka_network
+    <<: *java-logging
+    build: ./scala-service
+    environment:
+      - HADOOP_HOME=/opt/hadoop
+      - hadoop.home.dir=/opt/hadoop
+    networks:
+      - kafka_network
 
   go-service:
-      build: ./go-service
-      networks:
-        - kafka_network
+    build: ./go-service
+    networks:
+      - kafka_network
 
   rust-service:
-      build: ./rust-service
-      networks:
-        - kafka_network
+    build: ./rust-service
+    networks:
+      - kafka_network
 
   r-shiny-dashboard:
-      build: ./r-shiny-dashboard
-      ports:
-        - "3838:3838"
-      networks:
-        - kafka_network
+    build: ./r-shiny-dashboard
+    ports:
+      - "3838:3838"
+    networks:
+      - kafka_network
+
   csharp-gateway:
-      build: ./csharp-gateway
-      ports:
-        - "8080:80"
-      networks:
-        - kafka_network
+    build: ./csharp-gateway
+    ports:
+      - "8080:80"
+    networks:
+      - kafka_network
+
   prometheus:
-      image: prom/prometheus:latest
-      volumes:
-        - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      ports:
-        - "9090:9090"
-      networks:
-        - kafka_network
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - kafka_network
+
   grafana:
-      image: grafana/grafana:latest
-      depends_on:
-        - prometheus
-      ports:
-        - "3000:3000"
-      networks:
-        - kafka_network
-      volumes:
-        - grafana_data:/var/lib/grafana
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    networks:
+      - kafka_network
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   postgres_data:
   grafana_data:
