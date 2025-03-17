@@ -13,5 +13,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Python 3.9 interpreter library" level="application" />
+    <orderEntry type="library" name="scala-sdk-2.13.16" level="application" />
   </component>
 </module>
