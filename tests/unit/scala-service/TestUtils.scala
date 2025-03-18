@@ -1,24 +1,28 @@
-package com.example.service
-
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.execution.streaming.MemoryStream
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.SQLContext
 
 object TestUtils {
-  // Common schema used across tests
-  val messageSchema = new StructType()
-    .add("id", StringType)
-    .add("value", DoubleType)
-    .add("event_time", StringType)
 
-  // Helper method to create test data
-  def createTestMessage(id: String, value: Double, eventTime: String): String = {
-    s"""{"id": "$id", "value": $value, "event_time": "$eventTime"}"""
+  def createSparkSession(appName: String, checkpointDir: String): SparkSession = {
+    val spark = SparkSession.builder()
+      .appName(appName)
+      .master("local[2]")
+      .config("spark.sql.streaming.checkpointLocation", checkpointDir)
+      .getOrCreate()
+
+    val checkpointPath = new java.io.File(checkpointDir)
+    if (checkpointPath.exists()) {
+      checkpointPath.delete()
+    }
+
+    spark
   }
 
-  // Helper method to create invalid test data
-  def createInvalidMessage(messageType: String): String = messageType match {
-    case "malformed" => """{"id": "test" "value": 100}"""
-    case "invalid_types" => """{"id": 123, "value": "not_a_number", "event_time": true}"""
-    case "missing_fields" => """{"id": "test"}"""
-    case _ => throw new IllegalArgumentException(s"Unknown message type: $messageType")
+  def createMemoryStream(spark: SparkSession, schema: StructType): MemoryStream[String] = {
+    import spark.implicits._
+    implicit val sqlContext: SQLContext = spark.sqlContext
+    MemoryStream[String]
   }
 }

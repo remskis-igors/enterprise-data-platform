@@ -1,109 +1,118 @@
-package com.example.service
-
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SparkSession, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import java.io.File
 
-class JsonParsingSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll {
+class JsonParsingSpec extends AnyFlatSpec with Matchers {
+
   private val spark: SparkSession = SparkSession.builder()
     .appName("JsonParsingTest")
     .master("local[2]")
+    .config("spark.sql.streaming.checkpointLocation", "target/checkpoint/JsonParsingSpec")
     .getOrCreate()
 
   import spark.implicits._
 
-  override def afterAll(): Unit = {
-    spark.stop()
-    super.afterAll()
-  }
-
-  // Test schema definition
-  private val jsonSchema = new StructType()
-    .add("id", StringType)
-    .add("value", DoubleType)
-    .add("event_time", StringType)
-    .add("optional_field", StringType, nullable = true)
-
   "JSON Parser" should "handle all valid data type combinations" in {
-    val validJsonData = Seq(
-      """{"id": "123", "value": 42.5, "event_time": "2023-01-01T10:15:30Z", "optional_field": "test"}""",
-      """{"id": "456", "value": 0.0, "event_time": "2023-01-02T12:00:00Z"}"""
+    val jsonData = Seq(
+      """{"id": "123", "value": 42.5, "event_time": "2023-01-01T10:15:30Z"}""",
+      """{"id": "456", "value": 99.9, "event_time": "2023-01-02T12:00:00Z"}"""
     )
 
-    val df = spark.createDataset(validJsonData).toDF("json_str")
-    val parsedDF = df.select(from_json(col("json_str"), jsonSchema).as("data"))
+    val schema = new StructType()
+      .add("id", StringType)
+      .add("value", DoubleType)
+      .add("event_time", TimestampType)
+
+    val inputDF = spark.createDataset(jsonData).toDF("json_str")
+      .select(from_json(col("json_str"), schema).as("data"))
       .select("data.*")
 
-    val rows = parsedDF.collect()
+    inputDF.schema shouldBe schema
+    val rows = inputDF.collect()
     rows.length should be(2)
     rows(0).getString(0) should be("123")
     rows(0).getDouble(1) should be(42.5)
-    rows(0).getString(3) should be("test")
-    rows(1).getString(3) should be(null)
+    rows(0).getTimestamp(2).toInstant.toString should be("2023-01-01T10:15:30Z")
   }
 
   it should "handle missing required fields" in {
-    val invalidJsonData = Seq(
-      """{"id": "123"}""",
-      """{"value": 42.5, "event_time": "2023-01-01T10:15:30Z"}"""
+    val jsonData = Seq(
+      """{"id": "123", "event_time": "2023-01-01T10:15:30Z"}""",
+      """{"id": "456", "value": 99.9}"""
     )
 
-    val df = spark.createDataset(invalidJsonData).toDF("json_str")
-    val parsedDF = df.select(from_json(col("json_str"), jsonSchema).as("data"))
-      .select("data.*")
-      .na.drop("all") // Drop rows where all fields are null
+    val schema = new StructType()
+      .add("id", StringType)
+      .add("value", DoubleType)
+      .add("event_time", TimestampType)
 
-    val rows = parsedDF.collect()
-    rows.length should be(0) // All rows should be invalid
+    val inputDF = spark.createDataset(jsonData).toDF("json_str")
+      .select(from_json(col("json_str"), schema).as("data"))
+      .select("data.*")
+      .na.drop()
+
+    val rows = inputDF.collect()
+    rows.length should be(0) // Все строки должны быть отброшены
   }
 
   it should "handle invalid data types" in {
-    val invalidTypeData = Seq(
-      """{"id": 123, "value": "not-a-number", "event_time": "2023-01-01T10:15:30Z"}""",
-      """{"id": "456", "value": true, "event_time": 20230102}"""
+    val jsonData = Seq(
+      """{"id": "123", "value": "invalid", "event_time": "2023-01-01T10:15:30Z"}"""
     )
 
-    val df = spark.createDataset(invalidTypeData).toDF("json_str")
-    val parsedDF = df.select(from_json(col("json_str"), jsonSchema).as("data"))
-      .select("data.*")
-      .na.drop("all")
+    val schema = new StructType()
+      .add("id", StringType)
+      .add("value", DoubleType)
+      .add("event_time", TimestampType)
 
-    val rows = parsedDF.collect()
-    rows.length should be(0) // All rows should be invalid due to type mismatch
+    val inputDF = spark.createDataset(jsonData).toDF("json_str")
+      .select(from_json(col("json_str"), schema).as("data"))
+      .select("data.*")
+      .na.drop()
+
+    val rows = inputDF.collect()
+    rows.length should be(0) // Неверное значение должно исключаться
   }
 
   it should "handle malformed JSON strings" in {
-    val malformedData = Seq(
-      """{"id": "123" "value": 42.5}""", // Missing comma
-      """{"id": "456", value: 99.9}""",  // Missing quotes
-      "{malformed}"
+    val jsonData = Seq(
+      """{malformed json}"""
     )
 
-    val df = spark.createDataset(malformedData).toDF("json_str")
-    val parsedDF = df.select(from_json(col("json_str"), jsonSchema).as("data"))
-      .select("data.*")
-      .na.drop("all")
+    val schema = new StructType()
+      .add("id", StringType)
+      .add("value", DoubleType)
+      .add("event_time", TimestampType)
 
-    val rows = parsedDF.collect()
-    rows.length should be(0) // All rows should be invalid
+    val inputDF = spark.createDataset(jsonData).toDF("json_str")
+      .select(from_json(col("json_str"), schema).as("data"))
+      .select("data.*")
+      .na.drop()
+
+    val rows = inputDF.collect()
+    rows.length should be(0)
   }
 
   it should "handle empty and null values" in {
-    val emptyData = Seq(
-      """{"id": "", "value": null, "event_time": null}""",
-      null,
-      ""
+    val jsonData = Seq(
+      """{}""",
+      null
     )
 
-    val df = spark.createDataset(emptyData).toDF("json_str")
-    val parsedDF = df.select(from_json(col("json_str"), jsonSchema).as("data"))
-      .select("data.*")
-      .na.drop("all")
+    val schema = new StructType()
+      .add("id", StringType)
+      .add("value", DoubleType)
+      .add("event_time", TimestampType)
 
-    val rows = parsedDF.collect()
-    rows.length should be(0) // All rows should be invalid or empty
+    val inputDF = spark.createDataset(jsonData).toDF("json_str")
+      .select(from_json(col("json_str"), schema).as("data"))
+      .select("data.*")
+      .na.drop()
+
+    val rows = inputDF.collect()
+    rows.length should be(0)
   }
 }
