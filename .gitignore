@@ -1,0 +1,18 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Tests and builds
+scala-service/target/
+orchestration-service/target/
+out/
+
+# Frontend
+dashboard/frontend/node_modules/
+dashboard/frontend/build/
+
+# Logs
+*.log
+test_errors_details.log
+test_failures.log
