@@ -1,0 +1,23 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/R1Ga71/Documents/Github_projects/enterprise-data-platform/scala-service/target/scala-2.13/test-classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParsingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	StreamProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScalaServiceSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	KafkaProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParsingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	StreamProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScalaServiceSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	KafkaProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	KafkaProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	StreamProcessingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScalaServiceSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParsingSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TestUtils.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/R1Ga71/Documents/Github_projects/enterprise-data-platform/scala-service/target/scala-2.13/test-classes.bak[0m

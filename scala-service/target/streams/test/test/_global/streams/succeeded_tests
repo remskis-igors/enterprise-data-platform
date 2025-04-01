@@ -1,0 +1,7 @@
+#Successful Tests
+#Tue Mar 18 20:29:41 EET 2025
+StreamProcessingSpec=1742322581539
+JsonParsingSpec=1742322579817
+ScalaServiceSpec=1742322581268
+KafkaProcessingSpec=1742322579909
+com.example.service.KafkaProcessingSpec=1742321448527

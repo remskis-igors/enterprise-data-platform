@@ -1,0 +1,4 @@
+[0m[[0m[31merror[0m] [0m[0m/home/R1Ga71/Documents/Github_projects/enterprise-data-platform/tests/unit/scala-service/TestUtils.scala:24:17: Unable to find encoder for type String. An implicit Encoder[String] is needed to store String instances in a Dataset. Primitive types (Int, String, etc) and Product types (case classes) are supported by importing spark.implicits._  Support for serializing other types will be added in future releases.[0m
+[0m[[0m[31merror[0m] [0m[0m    MemoryStream[String][0m
+[0m[[0m[31merror[0m] [0m[0m                ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

@@ -1,0 +1,44 @@
+[0m[[0m[0mdebug[0m] [0m[0mjavaOptions: Vector(--add-exports=java.base/sun.nio.ch=ALL-UNNAMED, -Xms512M, -Xmx2048M)[0m
+[0m[[0m[0mdebug[0m] [0m[0mForking tests - parallelism = false[0m
+[0m[[0m[0mdebug[0m] [0m[0mCreate a single-thread test executor[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunner for org.scalatest.tools.Framework produced 4 initial tasks for 4 tests.[0m
+[0m[[0m[0mdebug[0m] [0m[0m  Running TaskDef(JsonParsingSpec, sbt.ForkMain$SubclassFingerscan@2d928643, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mJsonParsingSpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mJSON Parser[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle all valid data type combinations[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle missing required fields[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle invalid data types[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle malformed JSON strings[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle empty and null values[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0m    Produced 0 nested tasks and 5 events.[0m
+[0m[[0m[0mdebug[0m] [0m[0m  Running TaskDef(KafkaProcessingSpec, sbt.ForkMain$SubclassFingerscan@5025a98f, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mKafkaProcessingSpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mKafka message processor[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should convert binary messages to strings[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle empty messages[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle oversized messages[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0m    Produced 0 nested tasks and 3 events.[0m
+[0m[[0m[0mdebug[0m] [0m[0m  Running TaskDef(ScalaServiceSpec, sbt.ForkMain$SubclassFingerscan@49993335, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mScalaServiceSpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mJSON message parsing[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should correctly extract fields from valid JSON[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mKafka message processing[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should convert messages to the correct format[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mThe full pipeline[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should process messages end-to-end[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0m    Produced 0 nested tasks and 3 events.[0m
+[0m[[0m[0mdebug[0m] [0m[0m  Running TaskDef(StreamProcessingSpec, sbt.ForkMain$SubclassFingerscan@20322d26, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mStreamProcessingSpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mStream processor[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle basic stream operations[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0m    Produced 0 nested tasks and 1 events.[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 7 seconds, 456 milliseconds.[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 12[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 4, aborted 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 12, failed 0, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScalaServiceSpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	StreamProcessingSpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	KafkaProcessingSpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	JsonParsingSpec[0m

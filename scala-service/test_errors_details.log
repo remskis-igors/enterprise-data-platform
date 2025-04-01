@@ -1,0 +1,6 @@
+[error] Failed tests:
+[error] 	ScalaServiceSpec
+[error] 	com.example.service.StreamProcessingSpec
+[error] 	com.example.service.JsonParsingSpec
+[error] (Test / test) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 15 s, completed Mar 18, 2025, 7:39:23 PM

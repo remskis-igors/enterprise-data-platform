@@ -1,0 +1,83 @@
+[info] welcome to sbt 1.8.0 (Ubuntu Java 11.0.26)
+[info] loading settings for project scala-service-build from plugins.sbt ...
+[info] loading project definition from /home/R1Ga71/Documents/Github_projects/enterprise-data-platform/scala-service/project
+[info] loading settings for project root from build.sbt ...
+[info] set current project to scala-service (in build file:/home/R1Ga71/Documents/Github_projects/enterprise-data-platform/scala-service/)
+[info] compiling 5 Scala sources to /home/R1Ga71/Documents/Github_projects/enterprise-data-platform/scala-service/target/scala-2.13/test-classes ...
+[info] done compiling
+[info] StreamProcessingSpec:
+[info] Stream processor
+[info] - should handle basic stream operations
+[info] - should handle error scenarios in stream *** FAILED ***
+[info]   3 was not equal to 1 (StreanProcessingSpec.scala:78)
+[info] - should maintain state across batches *** FAILED ***
+[info]   org.apache.spark.sql.AnalysisException: Event time must be defined on a window or a timestamp, but event_time is of type string.;
+[info] EventTimeWatermark event_time#89: string, 10 minutes
+[info] +- Project [data#85.id AS id#87, data#85.value AS value#88, data#85.event_time AS event_time#89]
+[info]    +- Project [from_json(StructField(id,StringType,true), StructField(value,DoubleType,true), StructField(event_time,StringType,true), value#83, Some(Europe/Riga)) AS data#85]
+[info]       +- StreamingRelationV2 org.apache.spark.sql.execution.streaming.MemoryStreamTableProvider$@2f8c4f36, memory, org.apache.spark.sql.execution.streaming.MemoryStreamTable@1b33a863, [], [value#83]
+[info]   at org.apache.spark.sql.catalyst.analysis.package$AnalysisErrorAt.failAnalysis(package.scala:52)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$1(CheckAnalysis.scala:367)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$1$adapted(CheckAnalysis.scala:163)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:295)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0(CheckAnalysis.scala:163)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0$(CheckAnalysis.scala:160)
+[info]   at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis0(Analyzer.scala:188)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis(CheckAnalysis.scala:156)
+[info]   at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis$(CheckAnalysis.scala:146)
+[info]   at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis(Analyzer.scala:188)
+[info]   ...
+[info] JsonParsingSpec:
+[info] JSON Parser
+[info] - should handle all valid data type combinations
+[info] - should handle missing required fields *** FAILED ***
+[info]   2 was not equal to 0 (JsonParsingSpec.scala:60)
+[info] - should handle invalid data types *** FAILED ***
+[info]   2 was not equal to 0 (JsonParsingSpec.scala:75)
+[info] - should handle malformed JSON strings
+[info] - should handle empty and null values *** FAILED ***
+[info]   1 was not equal to 0 (JsonParsingSpec.scala:107)
+[info] KafkaProcessingSpec:
+[info] Kafka message processor
+[info] - should convert binary messages to strings
+[info] - should handle empty messages
+[info] - should handle oversized messages
+[info] ScalaServiceSpec:
+[info] JSON message parsing
+[info] - should correctly extract fields from valid JSON
+[info] - should handle malformed JSON gracefully
+[info] Kafka message processing
+[info] - should convert messages to the correct format
+[info] The full pipeline
+Schema of messages DataFrame:
+root
+ |-- id: string (nullable = true)
+ |-- value: double (nullable = true)
+ |-- event_time: string (nullable = true)
+
+Data in messages DataFrame:
+[info] - should process messages end-to-end *** FAILED ***
+[info]   org.apache.spark.sql.AnalysisException: Queries with streaming sources must be executed with writeStream.start();
+[info] memory
+[info]   at org.apache.spark.sql.catalyst.analysis.UnsupportedOperationChecker$.throwError(UnsupportedOperationChecker.scala:548)
+[info]   at org.apache.spark.sql.catalyst.analysis.UnsupportedOperationChecker$.$anonfun$checkForBatch$1(UnsupportedOperationChecker.scala:39)
+[info]   at org.apache.spark.sql.catalyst.analysis.UnsupportedOperationChecker$.$anonfun$checkForBatch$1$adapted(UnsupportedOperationChecker.scala:37)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:295)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:294)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:294)
+[info]   at scala.collection.immutable.Vector.foreach(Vector.scala:1895)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:294)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:294)
+[info]   at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:294)
+[info]   ...
+[info] Run completed in 8 seconds, 311 milliseconds.
+[info] Total number of tests run: 15
+[info] Suites: completed 4, aborted 0
+[info] Tests: succeeded 9, failed 6, canceled 0, ignored 0, pending 0
+[info] *** 6 TESTS FAILED ***
+[error] Failed tests:
+[error] 	ScalaServiceSpec
+[error] 	com.example.service.StreamProcessingSpec
+[error] 	com.example.service.JsonParsingSpec
+[error] (Test / test) sbt.TestsFailedException: Tests unsuccessful
+[error] Total time: 15 s, completed Mar 18, 2025, 7:39:23 PM
