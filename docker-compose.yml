@@ -56,8 +56,8 @@ services:
       retries: 10
       start_period: 120s
 
-  etl-service:
-    build: ./etl-service
+  etl_service:
+    build: ./etl_service
     depends_on:
       kafka:
         condition: service_healthy
@@ -66,8 +66,8 @@ services:
     networks:
       - kafka_network
 
-  data-generator:
-    build: ./data-generator
+  data_generator:
+    build: ./data_generator
     depends_on:
       kafka:
         condition: service_healthy
@@ -205,7 +205,7 @@ services:
       - kafka_network
 
   csharp-gateway:
-    build: ./csharp-gateway
+    build: ./csharp_gateway
     ports:
       - "8080:80"
     networks:
