@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackageId>CSharpGateway</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Remzkiz</Authors>
+    <Description>Gateway for the C# service</Description>
+    <PackageProjectUrl>https://example.com</PackageProjectUrl>
+    <PackageTags>gateway;api</PackageTags>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+  </PropertyGroup>
+<ItemGroup>
+  <PackageReference Include="Confluent.Kafka" Version="1.9.2" />
+</ItemGroup>
+
+</Project>
