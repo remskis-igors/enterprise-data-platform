@@ -15,4 +15,5 @@ dashboard/frontend/build/
 # Logs
 *.log
 test_errors_details.log
-test_failures.log
+test_failures.logcsharp_gateway/bin/
+csharp_gateway/obj/
